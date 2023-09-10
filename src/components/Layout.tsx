@@ -1,23 +1,36 @@
 // components/Layout.tsx
+import { signIn, signOut, useSession } from "next-auth/react";
 import SideBar from './SideBar';
+import NavBar from './Navbar';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const menus = [
-    { href: "/menu1", label: "Menu 1", icon: "🅰️" },
-    { href: "/menu2", label: "Menu 2", icon: "🅱️" },
-    { href: "/menu3", label: "Menu 3", icon: "🅾️" }
-  ];
+  const { data: session, status } = useSession();
 
+  const menus = [
+    { href: "/", label: "Dashboard", icon: "🅰️" },
+    { href: "/books", label: "Books", icon: "🅱️" },
+    { href: "/settings", label: "Settings", icon: "🅾️" }
+  ];
+ 
   return (
     <div className="flex">
-      <SideBar menus={menus} />
-      <div className="flex-1">
-        {children}
-      </div>
+      {session ? (
+        <>
+          <SideBar menus={menus} />
+          <div className="flex-1">
+            <NavBar />
+            {children}
+          </div>
+        </>
+      ) : (
+        <div className="flex-1">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
