@@ -1,22 +1,37 @@
+import { useEffect } from "react";
+
 type ModalProps = {
-    isOpen: boolean;
-    onClose: () => void;  // assuming onClose is a function that takes no arguments and returns nothing
-    children: React.ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+  modalId: string;
 };
 
-function Modal({ isOpen, onClose, children }: ModalProps) {
-    if (!isOpen) return null;
-  
-    return (
-      <div className="fixed inset-0 flex items-center justify-center z-50">
-        <div className="bg-white p-4 rounded shadow-lg w-64">
-          {children}
-          <button onClick={onClose} className="mt-2 btn btn-error">
-            Close
-          </button>
-        </div>
-      </div>
-    );
+function Modal({ isOpen, onClose, children, modalId }: ModalProps) {
+  useEffect(() => {
+    const modal = document.getElementById(modalId) as HTMLDialogElement;
+    if (isOpen) {
+        modal?.showModal();
+    } else {
+        modal?.close();
+    }
+  }, [isOpen]);
+
+  return (
+      <dialog id={modalId} className="modal">
+          <div className="modal-box">
+              <form method="dialog">
+                  <button
+                      className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                      onClick={onClose}
+                  >
+                      ✕
+                  </button>
+              </form>
+              {children}
+          </div>
+      </dialog>
+  );
 }
 
 export default Modal;
