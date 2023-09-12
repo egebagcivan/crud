@@ -4,7 +4,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 const NavBar: React.FC = () => {
     const { data: session, status } = useSession();
   return (
-    <div className="navbar bg-base-100">
+    <div className="navbar bg-base-300">
   <div className="flex-1">
     <a className="btn btn-ghost normal-case text-xl">daisyUI</a>
   </div>

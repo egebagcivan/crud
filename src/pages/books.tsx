@@ -101,12 +101,12 @@ export default function Books() {
   }
 
   return (
-    <div className="min-h-screen bg-base-300">
+    <div className="min-h-screen bg-base-100">
       <div className="overflow-x-auto">
         <button onClick={handleAddBook} className="btn btn-primary mb-4">
           Add Book
         </button>
-        <table className="table text-accent-content">
+        <table className="table text-accent-content table-zebra">
           <thead className="text-accent-content">
             <tr>
               <th>Title</th>
