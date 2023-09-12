@@ -101,12 +101,18 @@ export default function Books() {
   }
 
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="min-h-screen bg-base-100 p-6">
+      <div className="card card-compact bg-base-300 shadow-xl">
+        <div className="card-body">
       <div className="overflow-x-auto">
-        <button onClick={handleAddBook} className="btn btn-primary mb-4">
-          Add Book
-        </button>
-        <table className="table text-accent-content table-zebra">
+      <div className="flex mb-6">
+            <button onClick={handleAddBook} className="btn btn-primary">
+              Add Book
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+          <table className="table text-accent-content table-zebra w-full">
           <thead className="text-accent-content">
             <tr>
               <th>Title</th>
@@ -156,6 +162,8 @@ export default function Books() {
             ))}
           </tbody>
         </table>
+        </div>
+        </div>
       </div>
 
       <Modal
@@ -234,6 +242,7 @@ export default function Books() {
           </button>
         </div>
       </Modal>
+    </div>
     </div>
   );
 }
