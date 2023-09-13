@@ -12,9 +12,8 @@ export default function Login() {
     }
   }, [session, status, router]);
 
-  // If session is loading or authenticated, show a loading state or nothing
   if (status === "loading" || status === "authenticated") {
-    return <span className="loading loading-spinner loading-lg"></span>; // or return null or a specific loading component
+    return <span className="loading loading-spinner loading-lg"></span>;
   }
 
   return (

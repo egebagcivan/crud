@@ -18,16 +18,15 @@ type BookType = {
   id: string;
 };
 
-
 export default function Books() {
   const { data: session, status } = useSession();
   const { data: books, refetch } = api.book.getAll.useQuery();
-
+  // Mutations
   const deleteBookMutation = api.book.deleteBook.useMutation();
   const createBookMutation = api.book.createBook.useMutation();
   const updateBookMutation = api.book.updateBook.useMutation();
   const uploadImageMutation = api.book.uploadImage.useMutation();
-
+  // States
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [currentBook, setCurrentBook] = useState<BookType | null>(null);
@@ -65,7 +64,7 @@ export default function Books() {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]!);
     } else {
-      setSelectedFile(null); // Ensure we set to null if no file is selected
+      setSelectedFile(null);
     }
   };
 
@@ -74,12 +73,12 @@ export default function Books() {
       setIsUploading(true);
       try {
         const fileData = await convertFileToBase64(selectedFile);
-        
+
         const imageUrl = await uploadImageMutation.mutateAsync({
           fileName: selectedFile.name,
-          file: fileData
+          file: fileData,
         });
-        
+
         setFormData((prev) => ({
           ...prev,
           image: imageUrl,
@@ -90,20 +89,19 @@ export default function Books() {
         setIsUploading(false);
       }
     }
-};
+  };
 
-// Utility function to convert a file to its base64 representation
-const convertFileToBase64 = (file: File): Promise<string> => {
+  // Utility function to convert a file to its base64 representation
+  const convertFileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            resolve(reader.result as string);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result as string);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
-};
-
+  };
 
   const handleEditBook = (book: BookType) => {
     setCurrentBook(book);
@@ -263,9 +261,8 @@ const convertFileToBase64 = (file: File): Promise<string> => {
               className="textarea textarea-bordered mb-4 w-full"
               required
             />
-            // Inside the form in your Modal:
             <label className="mb-2 block">Cover Image</label>
-            <input type="file" onChange={handleFileChange} className="mb-4" />
+            <input type="file" onChange={handleFileChange} className="mb-4 file-input file-input-bordered w-full max-w-xs" />
             {selectedFile && (
               <button
                 type="button"
@@ -285,22 +282,22 @@ const convertFileToBase64 = (file: File): Promise<string> => {
               className="input input-bordered mb-4 w-full"
             />
             <button
-  type="submit"
-  disabled={
-    (currentBook
-      ? updateBookMutation.isLoading
-      : createBookMutation.isLoading) ||
-    (!currentBook && !formData.image) // Add button is disabled if no image is uploaded
-  }
-  className="btn btn-primary mt-2"
->
-  {currentBook ? (
-    <ArrowPathIcon className="h-5 w-5" />
-  ) : (
-    <PlusIcon className="h-5 w-5" />
-  )}
-  {currentBook ? "Update" : "Add"}
-</button>
+              type="submit"
+              disabled={
+                (currentBook
+                  ? updateBookMutation.isLoading
+                  : createBookMutation.isLoading) ||
+                (!currentBook && !formData.image) // Add button is disabled if no image is uploaded
+              }
+              className="btn btn-primary mt-2"
+            >
+              {currentBook ? (
+                <ArrowPathIcon className="h-5 w-5" />
+              ) : (
+                <PlusIcon className="h-5 w-5" />
+              )}
+              {currentBook ? "Update" : "Add"}
+            </button>
           </form>
         </Modal>
         <Modal
