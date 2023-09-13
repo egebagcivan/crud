@@ -17,6 +17,8 @@ type BookType = {
   link: string;
   id: string;
 };
+
+
 export default function Books() {
   const { data: session, status } = useSession();
   const { data: books, refetch } = api.book.getAll.useQuery();
@@ -24,6 +26,7 @@ export default function Books() {
   const deleteBookMutation = api.book.deleteBook.useMutation();
   const createBookMutation = api.book.createBook.useMutation();
   const updateBookMutation = api.book.updateBook.useMutation();
+  const uploadImageMutation = api.book.uploadImage.useMutation();
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -36,6 +39,8 @@ export default function Books() {
     link: "",
   });
   const [bookToDelete, setBookToDelete] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (!session && status !== "loading") {
@@ -55,6 +60,50 @@ export default function Books() {
 
     setModalOpen(true);
   };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]!);
+    } else {
+      setSelectedFile(null); // Ensure we set to null if no file is selected
+    }
+  };
+
+  const handleImageUpload = async () => {
+    if (selectedFile) {
+      setIsUploading(true);
+      try {
+        const fileData = await convertFileToBase64(selectedFile);
+        
+        const imageUrl = await uploadImageMutation.mutateAsync({
+          fileName: selectedFile.name,
+          file: fileData
+        });
+        
+        setFormData((prev) => ({
+          ...prev,
+          image: imageUrl,
+        }));
+      } catch (err) {
+        console.error("Error uploading image:", err);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+};
+
+// Utility function to convert a file to its base64 representation
+const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            resolve(reader.result as string);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+};
+
 
   const handleEditBook = (book: BookType) => {
     setCurrentBook(book);
@@ -214,14 +263,19 @@ export default function Books() {
               className="textarea textarea-bordered mb-4 w-full"
               required
             />
-            <label className="mb-2 block">Image URL</label>
-            <input
-              name="image"
-              value={formData.image}
-              onChange={handleInputChange}
-              placeholder="Image URL"
-              className="input input-bordered mb-4 w-full"
-            />
+            // Inside the form in your Modal:
+            <label className="mb-2 block">Cover Image</label>
+            <input type="file" onChange={handleFileChange} className="mb-4" />
+            {selectedFile && (
+              <button
+                type="button"
+                onClick={handleImageUpload}
+                className="btn btn-secondary mb-4"
+                disabled={isUploading}
+              >
+                {isUploading ? "Uploading..." : "Upload to S3"}
+              </button>
+            )}
             <label className="mb-2 block">Link</label>
             <input
               name="link"
@@ -231,21 +285,22 @@ export default function Books() {
               className="input input-bordered mb-4 w-full"
             />
             <button
-              type="submit"
-              disabled={
-                currentBook
-                  ? updateBookMutation.isLoading
-                  : createBookMutation.isLoading
-              }
-              className="btn btn-primary mt-2"
-            >
-              {currentBook ? (
-                <ArrowPathIcon className="h-5 w-5" />
-              ) : (
-                <PlusIcon className="h-5 w-5" />
-              )}
-              {currentBook ? "Update" : "Add"}
-            </button>
+  type="submit"
+  disabled={
+    (currentBook
+      ? updateBookMutation.isLoading
+      : createBookMutation.isLoading) ||
+    (!currentBook && !formData.image) // Add button is disabled if no image is uploaded
+  }
+  className="btn btn-primary mt-2"
+>
+  {currentBook ? (
+    <ArrowPathIcon className="h-5 w-5" />
+  ) : (
+    <PlusIcon className="h-5 w-5" />
+  )}
+  {currentBook ? "Update" : "Add"}
+</button>
           </form>
         </Modal>
         <Modal

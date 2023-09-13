@@ -1,6 +1,13 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { S3 } from "aws-sdk";
 
+export const config = {
+  api: {
+    // important! otherwise the body signature check will fail
+    bodyParser: false,
+  },
+};
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -67,4 +74,28 @@ export const bookRouter = createTRPCRouter({
       data: input,
     });
   }),
+
+  uploadImage: protectedProcedure
+  .input(z.object({
+    file: z.string(),
+    fileName: z.string(),
+  }))
+  .mutation(async ({ ctx, input }) => {
+    const s3 = new S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    });
+    const base64Data = input.file.split(",")[1];
+    const params = {
+      Bucket: process.env.AWS_BUCKET_NAME!,
+      Key: input.fileName,
+      Body: Buffer.from(base64Data!, 'base64'), // Assuming the file will be sent as a base64 encoded string
+      ContentType: 'image/jpeg',
+      ACL: 'public-read',
+      };
+
+    await s3.upload(params).promise();
+    const result = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${input.fileName}`;
+    return result;
+  })
 });
