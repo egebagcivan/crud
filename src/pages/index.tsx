@@ -17,7 +17,7 @@ export default function Home() {
  if (session) {
   return (
     <>
-    <div className="bg-base-300 min-h-screen">
+    <div className="min-h-screen bg-base-100 p-6">
     <p>Home</p>
     </div>
 
